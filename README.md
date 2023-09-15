@@ -1,15 +1,9 @@
 # paiza
 
-To install dependencies:
+### paizaのランクアップ問題集に取り組む記録用のレポジトリ。
 
-```bash
-bun install
-```
+https://paiza.jp/works/mondai/class_primer/problem_index?language_uid=javascript
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.0.1. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- ロボットの暴走 STEP1 -> connection.ts (CLEAR)
+- ロボットの暴走 STEP2 -> rpg.ts (CLEAR)
+- ロボットの暴走 STEP3 -> battlegame.ts (IN PROGRESS)
