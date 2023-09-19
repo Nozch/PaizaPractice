@@ -62,7 +62,11 @@ for await (const chunk of Bun.stdin.stream()) {
       // hpがどちらか０の場合、バトルできない
       if(attacker.hp <= 0 || blocker.hp <= 0) return
 
-      if(battle.attacker.isMoveSpecial) {
+      // 両方強化技を使用したらダメージなし
+      if(battle.attacker.isMoveSpecial && battle.blocker.isMoveSpecial) {
+        applyEnhancedMoves(attacker)
+        applyEnhancedMoves(blocker)
+      } else if(battle.attacker.isMoveSpecial) {
       // 強化技を使用した方は相手の技を受ける + 技を強化する
         attacker.hp -= block.damage
         applyEnhancedMoves(attacker)
