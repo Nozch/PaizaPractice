@@ -1,120 +1,170 @@
 for await (const chunk of Bun.stdin.stream()) {
-  const chunkText = Buffer.from(chunk).toString();
-  const inputlines = chunkText.split("\n")
+  
 
-  const players_count = inputlines[0].split(" ").map(Number)[0]
-  const attack_count = inputlines[0].split(" ").map(Number)[1]
-
-  interface Attack {
+  interface Move {
     frame: number;
     damage: number;
+    isSpecial: boolean;
   }
 
-  type Player = {
-    attacks: Attack[]
-    hp: number
-  }
-  // attacksは　三つのAttackの配列
+  type IsSpecialAttack = (frame: number, damage: number) => boolean
 
-
-  const players: Player[] = []
-  
-  for(let i = 0; i < players_count; i++) {
-    const hp = inputlines[1 + i].split(" ").map(Number)[0]
-    const attacks: Attack[] = []
-    for(let j = 0; j < 3; j++) {
-      const frame: Attack["frame"] = inputlines[1 + i].split(" ").map(Number)[2 * j + 1]
-      const damage: Attack["damage"] = inputlines[1 + i].split(" ").map(Number)[2 * j + 2]
-      const attack: Attack = { frame, damage }
-      attacks.push(attack);
-    }
-
-    const player: Player = { attacks, hp };
-    players.push(player);
-  }
-  // console.log(players)
-
-  type AttackBlock = {
-    attacker: number
-    attack: Attack
-    isAttackSpecial: boolean
-    attackIndex: number
-    blocker: number
-    block: Attack
-    blockIndex: number
-    isBlockSpecial: boolean
-  }
-
-  type Sequence = AttackBlock[]
-
-  const attack_sequence: Sequence = []
-
-  for(let i = 0; i < attack_count; i++) {
-    const attacker_index = inputlines[i + players_count + 1].split(" ").map(Number)[0] - 1
-    const attackIndex = inputlines[i + players_count + 1].split(" ").map(Number)[1] - 1
-    const blocker_index = inputlines[i + players_count + 1].split(" ").map(Number)[2] - 1
-    const blockIndex = inputlines[i + players_count + 1].split(" ").map(Number)[3] - 1
-
-    const attack = players[attacker_index]["attacks"][attackIndex]
-    const block = players[blocker_index]["attacks"][blockIndex]
-    const isAttackSpecial = isSpecialAttack(attack)
-    const isBlockSpecial = isSpecialAttack(block)
-    const attacker = attacker_index
-    const blocker = blocker_index 
-    const attackBlock: AttackBlock = { attacker, attack, attackIndex, blocker, block, blockIndex, isAttackSpecial, isBlockSpecial }
-    attack_sequence.push(attackBlock)
-
-  }
-
-  console.log(attack_sequence)
-
-
-  function isSpecialAttack(attack: Attack): boolean {
-    if(attack["frame"] === 0 && attack["damage"] === 0) {
+  const isSpecialAttack: IsSpecialAttack = (frame, damage) => {
+    if(frame === 0 && damage === 0) {
       return true
     } else {
       return false;
     }
   }
 
-  function decreaseFrameIncreaseDamage(players: Player[], whoChanges: number, specialAttackIndex: number): Attack[] {
-    const enhancedAttack = players[whoChanges]["attacks"].map((attack, index) => {
-      if(index === specialAttackIndex) {
-        return attack
-      }
-      const enhancedFrame = attack["frame"] - 3 < 0 ? 0 : attack["frame"] - 3
-      const enhancedDamage = attack["damage"] + 5 < 0 ? 0 : attack["damage"] + 5
+  type Player = {
+    moves: Move[]
+    hp: number
+  }
+  // movesは　三つのMoveの配列
 
-      return { "frame": enhancedFrame, "damage": enhancedDamage }
-    });
+  type EnhanceMove = (moves: Move[]) => Move[]
 
-    return enhancedAttack;
+
+  interface BattlePlayer  {
+    isMoveSpecial: boolean
+    playersIndex: number
+    movesIndex: number
   }
 
-  function playerDamages(sequence: Sequence, players: Player[]) {
-    for(let i = 0; i < sequence.length; i++) {
-      const attackBlock = sequence[i];
-      const attack = attackBlock["attack"]
-      const block = attackBlock["block"]
-      
-      if(isSpecialAttack(attack) && isSpecialAttack(block)) {
-        const enhancedAttack = decreaseFrameIncreaseDamage(players, attackBlock["attacker"], attackBlock["attackIndex"])
-        console.log(enhancedAttack)
-        const enhancedBlock = decreaseFrameIncreaseDamage(players, attackBlock["blocker"], attackBlock["blockIndex"])
-      
-      } else if(isSpecialAttack(attack)) {
-        const enhancedAttack = decreaseFrameIncreaseDamage(players, attackBlock["attacker"], attackBlock["attackIndex"])
-        const decreasedHealth = players[attackBlock["attacker"]]["hp"] - block["damage"]
+  interface Battle {
+    attacker: BattlePlayer
+    blocker: BattlePlayer
+  }
 
-      } else if(isSpecialAttack(block)) {
-        const enhancedBlock = decreaseFrameIncreaseDamage(players, attackBlock["blocker"], attackBlock["blockIndex"])
-        const decreasedHealth = players[attackBlock["blocker"]]["hp"] - attack["damage"]
-
-      } else if(attack["frame"] > block["frame"]) {
-        const decreasedHealth = players[attackBlock["attacker"]]["hp"] - attack["damage"]
-      } else if(attack["frame"] < block["frame"]) {
-        
+  const FrameSpecialDecrese = 3;
+  const DamageSpecialIncrese = 5
+  const enhanceMove: EnhanceMove = (moves) => {
+    const enhancedMoves: Move[] = moves.map((move) => {
+      if(move.isSpecial) {
+        return move
+      } else {
+        return (
+          {
+            frame: move.frame - FrameSpecialDecrese < 0 ? 0 : move.frame - FrameSpecialDecrese,
+            damage: move.damage + DamageSpecialIncrese,
+            isSpecial: false
+          }
+        )
       }
+    })
+    return enhancedMoves
+  }
+
+
+  function createPlayers(inputLines: string[], playersCount: number, isSpecialAttack: IsSpecialAttack): Player[] {
+    let players: Player[] = []
+    for(let i = 0; i < playersCount; i++) {
+      const [hp, ...moveProps] = inputLines[1 + i].split(" ").map(Number)
+      const moves: Move[] = []
+  
+      for(let j = 0; j < 3; j++) {
+        const frame = moveProps[2 * j]
+        const damage = moveProps[2 * j + 1]
+        const isSpecial = isSpecialAttack(frame, damage)
+
+        const move: Move= { frame, damage, isSpecial }
+        moves.push(move);
+      }
+  
+      const player: Player = { moves, hp };
+      players.push(player);
     }
+    return players;
   }
+
+
+
+
+  function createBattles(inputLines: string[], playersCount: number, attackCount: number, players: Player[]): Battle[] {
+    const battles: Battle[] = []
+    for(let i = 0; i < attackCount; i++) {
+      const [attackerIndex, attackIndex, blockerIndex, blockIndex] = inputLines[i + playersCount + 1].split(" ").map(Number).map(x => x - 1)
+      const attacker = players[attackerIndex]
+      const attack = attacker.moves[attackIndex]
+      const blocker = players[blockerIndex]
+      const block = blocker.moves[blockIndex]
+
+      const battle: Battle = {
+        attacker: {
+          isMoveSpecial: attack.isSpecial,
+          playersIndex: attackerIndex,
+          movesIndex: attackIndex
+        },
+        blocker: {
+          isMoveSpecial: block.isSpecial,
+          playersIndex: blockerIndex,
+          movesIndex: blockIndex
+        }
+      }
+  
+      battles.push(battle) 
+    }
+    return battles
+  }
+
+  function applyEnhancedMoves(player: Player) {
+    const enhancedMoves = enhanceMove(player.moves)
+    player.moves = enhancedMoves
+  }
+
+  // playersを直接変更する
+  function applyDamages(battles: Battle[], players: Player[]) {
+    battles.forEach((battle) => {
+      const attacker = players[battle.attacker.playersIndex]
+      const attack = attacker.moves[battle.attacker.movesIndex]
+
+      const blocker = players[battle.blocker.playersIndex]
+      const block = blocker.moves[battle.blocker.movesIndex]
+
+      // hpがどちらか０の場合、バトルできない
+      if(attacker.hp <= 0 || blocker.hp <= 0) return
+
+      if(battle.attacker.isMoveSpecial) {
+      // 強化技を使用した方は相手の技を受ける + 技を強化する
+        attacker.hp -= block.damage
+        applyEnhancedMoves(attacker)
+      } else if(battle.blocker.isMoveSpecial) {
+        blocker.hp -= attack.damage
+        applyEnhancedMoves(blocker)  
+        // frameを比較する
+      } else if(attack.frame < block.frame) {
+        blocker.hp -= attack.damage
+      } else if(block.frame < attack.frame) {
+        attacker.hp -= block.damage
+      }
+      // 攻撃技のframeが互角の時は何もしない
+
+    })
+  }
+
+
+  function countAlivePlayers(players: Player[]) : number {
+    const alivePlayers = players.filter((player) => player.hp  > 0)
+    return alivePlayers.length
+  }
+
+
+  const chunkText = Buffer.from(chunk).toString();
+  const inputlines = chunkText.split("\n")
+
+  const players_count = inputlines[0].split(" ").map(Number)[0]
+  const attack_count = inputlines[0].split(" ").map(Number)[1]
+
+  const players = createPlayers(inputlines, players_count, isSpecialAttack)
+  // console.log(players)
+
+  const battles = createBattles(inputlines, players_count, attack_count, players)
+  // console.log(battles)
+
+  applyDamages(battles, players)
+  // console.log(players)
+
+  const alivePlayersCount = countAlivePlayers(players)
+  console.log(alivePlayersCount)
 }
