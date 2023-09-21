@@ -1,0 +1,10 @@
+3 6
+supercar 1 1
+supersupercar 10 10
+supersupersupercar 100 5
+1 run
+2 run
+2 fly
+3 run
+3 fly
+3 teleport
