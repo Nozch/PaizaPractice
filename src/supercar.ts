@@ -7,7 +7,7 @@ for await (const chunk of Bun.stdin.stream()) {
     moveSum: number
   }
 
-  class SuperCar {
+  class SuperCar implements Car {
     type: string
     fuel: number
     fuelEfficiency: number
