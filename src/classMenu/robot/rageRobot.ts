@@ -34,7 +34,7 @@ for await (const chunk of Bun.stdin.stream()) {
     }
 
     set level(level: number) {
-      console.log("setter was called")
+      // console.log("setter was called")
       this._level = level
       this.setMoveDistance()
     }

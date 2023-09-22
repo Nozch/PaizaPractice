@@ -20,7 +20,7 @@ for await (const chunk of Bun.stdin.stream()) {
       this.level = robot.level;
     }
     set level(level) {
-      console.log("setter was called");
+      // console.log("setter was called");
       this._level = level;
       this.setMoveDistance();
     }
