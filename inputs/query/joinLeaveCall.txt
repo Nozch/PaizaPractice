@@ -1,0 +1,9 @@
+4 4
+1 Sin
+2 Sakura
+3 Kayo
+4 Yui
+call 4
+leave 2
+join 2 Sakuya
+call 2

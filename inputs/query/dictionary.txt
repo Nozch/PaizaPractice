@@ -1,0 +1,7 @@
+4 2
+1 Sin
+2 Sakura
+3 Kayo
+4 Yui
+4
+2
