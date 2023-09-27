@@ -1,10 +1,4 @@
-// studentCount = 84000, eventCount = 73000　で3.09秒
-
-const sorting = (arr: number[], key: number) =>  {
-  arr.sort((a, b) => a - b)
-  console.log(arr.findIndex((height) => height === key) + 1)
-}
-
+// studentCount = 84000, eventCount = 73000　で0.19秒
 
 for await (const chunk of Bun.stdin.stream()) {
   const chunkText = Buffer.from(chunk).toString();

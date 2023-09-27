@@ -1,0 +1,10 @@
+2 7
+nene
+ao
+handshake
+leave nene
+join neko
+join koko
+handshake
+leave neko
+handshake
