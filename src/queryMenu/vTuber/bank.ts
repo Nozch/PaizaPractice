@@ -22,7 +22,7 @@ for await (const chunk of Bun.stdin.stream()) {
   
   inputLines
   .slice(1, 1 + companyCount)
-  .map((line, i) => {
+  .map((line) => {
     const [company, secretNumberStr, balanceStr] = line.split(' ')
     const secretNumber = +secretNumberStr
     const balance = +balanceStr
@@ -43,7 +43,7 @@ for await (const chunk of Bun.stdin.stream()) {
   for (const transaction of transactionArr) {
     const { secretNumber, balance: prevBalance } = companies.get(transaction.company)
     if(secretNumber === transaction.secretNumber) {
-      
+
       const newBalance = prevBalance - transaction.balance
       companies.set(transaction.company, { secretNumber, balance: newBalance })
     }
