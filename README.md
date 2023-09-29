@@ -22,3 +22,18 @@ https://paiza.jp/works/mondai/query_primer/problem_index?language_uid=javascript
 - STEP3 -> queryMultiElement.ts queryMultiElement_performanceImprove.ts
 - STEP4 -> deleteFirstElement.ts
 - STEP5 -> popAndShow.ts popAndShowImproved.ts popAndShowImproved2.ts
+
+VTuber 
+- STEP1 -> idolGroup.ts, idolGroupPerformance.ts
+- STEP2 -> historicalTime.ts
+- STEP3 -> bank.ts
+- STEP4 -> accounting.ts
+- STEP5 -> vtuber.ts
+
+平方分割
+- STEP1 -> cumulativeSum.ts
+- STEP2 -> intervalSum.ts
+- STEP3 -> twoDimensionCumulativeSum.ts
+- STEP4 -> twoDimensionIntervalSum.ts
+- STEP5 -> squareDivisionBucket.ts
+- STEP6 -> squareDivision.ts
